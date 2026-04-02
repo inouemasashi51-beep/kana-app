@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ฝึกอ่านภาษาญี่ปุ่น — かな読み上げ練習</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f3;
+    --ink: #1a1a1a; --muted: #6b6b6b;
+    --border: rgba(0,0,0,0.12);
+    --r-md: 8px; --r-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Sarabun', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    --indigo: #3d5a99; --indigo-d: #2e4480;
+    --red: #e24b4a; --red-d: #c03a39;
+    --green: #3b6d11; --amber: #854f0b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a; --bg2: #252525;
+      --ink: #f0f0f0; --muted: #9a9a9a;
+      --border: rgba(255,255,255,0.12);
+    }
+  }
+  body { font-family: var(--font); background: var(--bg2); color: var(--ink); min-height: 100vh; padding: 1rem; }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .btn { padding: 8px 16px; border-radius: var(--r-md); font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--border); background: var(--bg); color: var(--ink); transition: all 0.15s; font-family: var(--font); }
+  .btn:hover { background: var(--bg2); } .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .btn-primary:hover { background: var(--indigo-d); }
+  .btn-danger { background: var(--red); border-color: var(--red); color: #fff; font-size: 12px; padding: 6px 12px; }
+  .btn-danger:hover { background: var(--red-d); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; }
+  .tab { padding: 8px 14px; font-size: 13px; cursor: pointer; color: var(--muted); border: none; border-bottom: 2px solid transparent; background: none; font-family: var(--font); transition: all 0.15s; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--indigo); font-weight: 500; }
+  .lbl { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .empty { text-align: center; color: var(--muted); font-size: 13px; padding: 1.5rem; }
+  textarea { width: 100%; border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; font-size: 20px; font-family: var(--font); background: var(--bg2); color: var(--ink); resize: none; line-height: 1.6; }
+  textarea::placeholder { color: var(--muted); font-size: 15px; }
+  .icon-btn { width: 32px; height: 32px; border-radius: var(--r-md); border: 0.5px solid var(--border); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .icon-btn:hover { background: var(--bg2); }
+  .panel { display: none; } .panel.active { display: block; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
+  .spinner-dark { border-color: rgba(0,0,0,0.15); border-top-color: var(--indigo); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* loading overlay */
+  #loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 999; }
+  #loading-overlay .spinner { width: 24px; height: 24px; border-color: rgba(0,0,0,0.1); border-top-color: var(--indigo); }
+  #loading-overlay span { font-size: 13px; color: var(--muted); }
+
+  /* login */
+  #login-screen { display: none; text-align: center; padding: 2rem 0; }
+  .login-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 2rem 1.5rem; max-width: 320px; margin: 0 auto; }
+  .pw-input { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border); border-radius: var(--r-md); font-size: 15px; background: var(--bg2); color: var(--ink); font-family: var(--font); text-align: center; letter-spacing: 0.12em; margin-bottom: 10px; }
+  .pw-input:focus { outline: none; border-color: var(--indigo); }
+  .pw-error { font-size: 12px; color: var(--red); margin-bottom: 10px; min-height: 16px; }
+
+  /* teacher */
+  .teacher-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 0.5px solid var(--border); }
+  .t-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--indigo); background: #eef1f9; padding: 4px 10px; border-radius: var(--r-md); }
+  .cat-btn.active { background: #eef1f9; border-color: var(--indigo); color: var(--indigo); }
+  .content-item { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .upload-zone { border: 1.5px dashed var(--border); border-radius: var(--r-lg); padding: 1.5rem; text-align: center; cursor: pointer; background: var(--bg2); transition: border-color 0.2s; display: block; }
+  .upload-zone:hover { border-color: var(--indigo); }
+  .upload-zone input { display: none; }
+  .audio-item { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 12px; margin-top: 8px; }
+  .audio-item audio { width: 100%; height: 36px; margin-top: 8px; display: block; }
+  .save-indicator { font-size: 11px; color: #639922; margin-top: 6px; min-height: 14px; }
+
+  /* storage info bar */
+  .storage-bar { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; font-size: 12px; }
+  .storage-bar-label { color: var(--muted); }
+  .storage-bar-value { font-weight: 500; }
+
+  /* practice card */
+  .practice-header { text-align: center; padding: 0.5rem 0; }
+  .big-kana { font-size: 56px; font-weight: 500; letter-spacing: 0.05em; margin: 0.5rem 0; line-height: 1.2; }
+  .kana-cat { font-size: 12px; color: var(--muted); }
+  .nav-btns { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0.75rem 0; }
+  .nav-btn { width: 36px; height: 36px; border-radius: 50%; border: 0.5px solid var(--border); background: var(--bg); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .nav-btn:hover { background: var(--bg2); }
+  .nav-counter { font-size: 13px; color: var(--muted); min-width: 60px; text-align: center; }
+  .progress-dots { display: flex; gap: 4px; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .dot.done { background: #639922; } .dot.current { background: var(--indigo); }
+
+  /* record */
+  .record-area { text-align: center; padding: 1rem 0 0.5rem; }
+  .record-ring { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg2); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; cursor: pointer; transition: all 0.2s; font-size: 26px; user-select: none; }
+  .record-ring:hover { border-color: var(--red); background: #fff0f0; }
+  .record-ring.recording { border-color: var(--red); background: #fcebeb; animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+  .record-hint { font-size: 13px; color: var(--muted); }
+  .record-status { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 18px; line-height: 1.4; }
+  .transcript-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r-md); padding: 12px 14px; margin-top: 12px; display: none; }
+  .transcript-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .transcript-row { display: flex; align-items: flex-start; gap: 10px; }
+  .transcript-item { flex: 1; }
+  .transcript-item-label { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .transcript-target { font-size: 22px; font-weight: 500; letter-spacing: 0.05em; }
+  .transcript-heard { font-size: 22px; letter-spacing: 0.05em; }
+  .char-match { color: #3b6d11; } .char-miss { color: #e24b4a; text-decoration: underline; } .char-extra { color: #ba7517; }
+  .banner { border-radius: var(--r-md); padding: 10px 14px; font-size: 13px; margin-bottom: 10px; display: none; line-height: 1.5; }
+  .banner-warn { background: #fff8e6; border: 0.5px solid #f0c040; color: #6b4c00; }
+  .banner-info { background: #eef1f9; border: 0.5px solid #b0bfe8; color: #2a3f7a; }
+  .playback-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 0.5px solid var(--border); margin-top: 10px; flex-wrap: wrap; }
+  .playback-row audio { flex: 1; height: 36px; min-width: 180px; }
+
+  /* eval */
+  .eval-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; margin-top: 1rem; }
+  .eval-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .eval-score { font-size: 30px; font-weight: 500; }
+  .score-high { color: var(--green); } .score-mid { color: var(--amber); } .score-low { color: #a32d2d; }
+  .bar-wrap { margin: 6px 0; }
+  .bar-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+  .fill-good{background:#639922} .fill-mid{background:#ba7517} .fill-bad{background:#e24b4a}
+  .eval-fb { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 10px; border-top: 0.5px solid var(--border); padding-top: 10px; }
+  .fb-lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+  .fb-txt { margin-bottom: 10px; color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <span>กำลังโหลดข้อมูล...</span>
+</div>
+
+<div class="wrap" style="display:none;" id="main-wrap">
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:4px;">教員モード</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1.5rem;">パスワードを入力してください</div>
+      <input class="pw-input" type="password" id="pw-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+      <div class="pw-error" id="pw-error"></div>
+      <button class="btn btn-primary" style="width:100%;" onclick="checkPw()">ログイン</button>
+      <button class="btn" style="width:100%;margin-top:8px;" onclick="showStudent()">← 戻る</button>
+    </div>
+  </div>
+
+  <!-- TEACHER -->
+  <div class="panel" id="panel-teacher">
+    <div class="teacher-bar">
+      <span class="t-badge">🎓 教員モード</span>
+      <button class="btn btn-danger" onclick="logout()">ログアウト</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('text')">テキスト追加</button>
+      <button class="tab" onclick="switchTab('audio')">音声ファイル</button>
+      <button class="tab" onclick="switchTab('list')">一覧</button>
+    </div>
+
+    <div id="tab-text">
+      <div class="lbl">練習テキストを追加</div>
+      <div class="card">
+        <textarea id="kana-input" rows="3" placeholder="ひらがなやカタカナを入力&#10;例: さくら / コーヒー / ありがとうございます"></textarea>
+        <div style="margin-top:8px;">
+          <div class="lbl" style="margin-bottom:6px;">カテゴリー</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn cat-btn active" data-cat="ひらがな" onclick="selectCat(this)">ひらがな</button>
+            <button class="btn cat-btn" data-cat="カタカナ" onclick="selectCat(this)">カタカナ</button>
+            <button class="btn cat-btn" data-cat="混合" onclick="selectCat(this)">混合</button>
+            <button class="btn cat-btn" data-cat="単語" onclick="selectCat(this)">単語</button>
+            <button class="btn cat-btn" data-cat="文" onclick="selectCat(this)">文</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addContent()">追加する</button>
+          <button class="btn" onclick="document.getElementById('kana-input').value=''">クリア</button>
+        </div>
+      </div>
+      <div class="lbl">クイック追加</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;">
+        <button class="btn" onclick="quickAdd('あいうえお','ひらがな')">あいうえお</button>
+        <button class="btn" onclick="quickAdd('アイウエオ','カタカナ')">アイウエオ</button>
+        <button class="btn" onclick="quickAdd('さくら','単語')">さくら</button>
+        <button class="btn" onclick="quickAdd('コーヒー','カタカナ')">コーヒー</button>
+        <button class="btn" onclick="quickAdd('ありがとうございます','文')">ありがとうございます</button>
+        <button class="btn" onclick="quickAdd('おはようございます','文')">おはようございます</button>
+      </div>
+    </div>
+
+    <div id="tab-audio" style="display:none;">
+      <div class="lbl">音声ファイルをアップロード</div>
+      <div class="storage-bar">
+        <span class="storage-bar-label">💾 ブラウザに保存済み</span>
+        <span class="storage-bar-value" id="storage-count">0 ファイル</span>
+      </div>
+      <div class="card">
+        <label class="upload-zone" id="drop-zone">
+          <input type="file" accept="audio/*" multiple onchange="handleAudioUpload(this)">
+          <div style="font-size:28px;margin-bottom:8px;">🎵</div>
+          <div style="font-size:14px;font-weight:500;">ファイルを選択またはドロップ</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">MP3・WAV・M4A・OGG 対応 — ブラウザを閉じても保存されます</div>
+        </label>
+        <div id="audio-file-list"></div>
+        <div class="save-indicator" id="save-indicator"></div>
+      </div>
+    </div>
+
+    <div id="tab-list" style="display:none;">
+      <div class="lbl">登録済みコンテンツ</div>
+      <div id="content-list-view"><div class="empty">まだありません</div></div>
+    </div>
+  </div>
+
+  <!-- STUDENT -->
+  <div class="panel active" id="panel-student">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:17px;font-weight:600;">🌸 ฝึกออกเสียงภาษาญี่ปุ่น</div>
+        <div style="font-size:12px;color:var(--muted);">ฝึกอ่านฮิรางานะและคาตาคานะ</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:5px 10px;color:var(--muted);" onclick="showLogin()">教員ログイン</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchStudentTab('text')">อ่านออกเสียง</button>
+      <button class="tab" onclick="switchStudentTab('audio')">ฟังและฝึกพูด</button>
+    </div>
+
+    <div id="student-tab-text">
+      <div class="card">
+        <div class="practice-header">
+          <div class="kana-cat" id="practice-cat">ひらがな</div>
+          <div class="big-kana" id="practice-text">—</div>
+        </div>
+        <div class="nav-btns">
+          <button class="nav-btn" onclick="navItem(-1)">◀</button>
+          <span class="nav-counter" id="nav-counter">0 / 0</span>
+          <button class="nav-btn" onclick="navItem(1)">▶</button>
+        </div>
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--muted);">บันทึกเสียงของคุณ</div>
+        <div id="banner-mic" class="banner banner-warn">⚠️ <strong>ไม่สามารถเข้าถึงไมโครโฟนได้</strong><br>กรุณาอนุญาตการเข้าถึงไมโครโฟนในเบราว์เซอร์ แล้วกดปุ่มบันทึกอีกครั้ง<br><span style="font-size:11px;">(Chrome: คลิกไอคอนกุญแจในแถบที่อยู่ → อนุญาตไมโครโฟน)</span></div>
+        <div id="banner-nospeech" class="banner banner-info">ℹ️ ไม่ได้ยินเสียงพูด — กรุณาพูดให้ดังและชัดเจนขึ้น แล้วลองอีกครั้ง</div>
+        <div id="banner-nobrowser" class="banner banner-warn">⚠️ เบราว์เซอร์นี้ไม่รองรับการรู้จำเสียง — กรุณาใช้ Google Chrome เพื่อรับการประเมิน</div>
+        <div class="record-area">
+          <div class="record-ring" id="record-btn" onclick="toggleRecord()">🎤</div>
+          <div class="record-hint" id="record-hint">แตะเพื่อเริ่มบันทึกเสียง</div>
+          <div class="record-status" id="record-status"></div>
+        </div>
+        <div class="transcript-box" id="transcript-box">
+          <div class="transcript-label">ผลการรับรู้เสียง (Speech Recognition)</div>
+          <div class="transcript-row">
+            <div class="transcript-item">
+              <div class="transcript-item-label">ข้อความที่ต้องการ</div>
+              <div class="transcript-target" id="transcript-target">—</div>
+            </div>
+            <div style="font-size:20px;padding-top:16px;color:var(--muted);">→</div>
+            <div class="transcript-item">
+              <div class="transcript-item-label">เสียงที่ได้ยิน</div>
+              <div class="transcript-heard" id="transcript-heard">—</div>
+            </div>
+          </div>
+          <div id="transcript-note" style="font-size:12px;color:var(--muted);margin-top:8px;"></div>
+        </div>
+        <div id="playback-wrap" style="display:none;" class="playback-row">
+          <span style="font-size:12px;color:var(--muted);">เสียงที่บันทึก:</span>
+          <audio id="recorded-audio" controls></audio>
+        </div>
+        <div class="btn-row" style="justify-content:center;margin-top:10px;">
+          <button class="btn btn-primary" id="eval-btn" onclick="evaluatePronunciation()" style="display:none;">ให้ AI ประเมินการออกเสียง ↗</button>
+        </div>
+      </div>
+      <div id="eval-result" style="display:none;"></div>
+    </div>
+
+    <div id="student-tab-audio" style="display:none;">
+      <div id="audio-practice-list"><div class="empty">ครูยังไม่ได้อัปโหลดไฟล์เสียง</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TEACHER_PW = 'sensei123';
+const DB_NAME = 'KanaPracticeDB';
+const DB_VER = 1;
+
+let S = {
+  tTab:'text', sTab:'text', cat:'ひらがな',
+  contents:[], audioFiles:[], idx:0,
+  recording:false, mediaRec:null, chunks:[], blob:null,
+  speechRec:null, transcript:'', evaluating:false,
+  hasSpeechAPI: ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window),
+  db: null
+};
+
+/* ══════════════════════════════════════
+   IndexedDB — open / save / load / delete
+   ══════════════════════════════════════ */
+function openDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('audioFiles'))
+        db.createObjectStore('audioFiles', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('contents'))
+        db.createObjectStore('contents', {keyPath:'id'});
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+function dbPut(store, obj){
+  return new Promise((resolve, reject)=>{
+    const tx = S.db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = ()=>resolve();
+    req.onerror   = e=>reject(e.target.error);
+  });
+}
+
+function dbDelete(store, id){
+  return new Promise((resolve, reject)=>{
+    const tx = S.db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = ()=>resolve();
+    req.onerror   = e=>reject(e.target.error);
+  });
+}
+
+function dbGetAll(store){
+  return new Promise((resolve, reject)=>{
+    const tx = S.db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = e=>resolve(e.target.result);
+    req.onerror   = e=>reject(e.target.error);
+  });
+}
+
+async function loadAllFromDB(){
+  try {
+    const [audioRows, contentRows] = await Promise.all([
+      dbGetAll('audioFiles'),
+      dbGetAll('contents')
+    ]);
+    // sort by saved timestamp
+    S.audioFiles = audioRows.sort((a,b)=>a.savedAt-b.savedAt);
+    S.contents   = contentRows.sort((a,b)=>a.savedAt-b.savedAt);
+  } catch(e) {
+    console.warn('DB load error:', e);
+  }
+}
+
+function showSaveIndicator(msg){
+  const el = document.getElementById('save-indicator');
+  if(el){ el.textContent = msg; setTimeout(()=>{ el.textContent=''; }, 3000); }
+}
+
+function updateStorageCount(){
+  const el = document.getElementById('storage-count');
+  if(el) el.textContent = S.audioFiles.length + ' ファイル';
+}
+
+/* ══════════════════════════════════════
+   Auth
+   ══════════════════════════════════════ */
+function showLogin(){
+  ['panel-student','panel-teacher'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('pw-input').value='';
+  document.getElementById('pw-error').textContent='';
+  setTimeout(()=>document.getElementById('pw-input').focus(),80);
+}
+function checkPw(){
+  if(document.getElementById('pw-input').value===TEACHER_PW){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('panel-teacher').classList.add('active');
+    updateStorageCount();
+  } else {
+    document.getElementById('pw-error').textContent='パスワードが正しくありません';
+    document.getElementById('pw-input').value='';
+  }
+}
+function logout(){
+  document.getElementById('panel-teacher').classList.remove('active');
+  document.getElementById('panel-student').classList.add('active');
+  renderPracticeCard(); renderAudioPractice();
+}
+function showStudent(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('panel-student').classList.add('active');
+}
+
+/* ══════════════════════════════════════
+   Tabs
+   ══════════════════════════════════════ */
+function switchTab(t){
+  S.tTab=t;
+  document.querySelectorAll('#panel-teacher .tab').forEach((b,i)=>b.classList.toggle('active',['text','audio','list'][i]===t));
+  ['text','audio','list'].forEach(id=>document.getElementById('tab-'+id).style.display=id===t?'':'none');
+  if(t==='list') renderContentList();
+  if(t==='audio') updateStorageCount();
+}
+function switchStudentTab(t){
+  S.sTab=t;
+  document.querySelectorAll('#panel-student .tab').forEach((b,i)=>b.classList.toggle('active',['text','audio'][i]===t));
+  document.getElementById('student-tab-text').style.display=t==='text'?'':'none';
+  document.getElementById('student-tab-audio').style.display=t==='audio'?'':'none';
+  if(t==='audio') renderAudioPractice();
+}
+
+/* ══════════════════════════════════════
+   Text content — saved to IndexedDB
+   ══════════════════════════════════════ */
+function selectCat(el){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); S.cat=el.dataset.cat;
+}
+async function addContent(){
+  const t=document.getElementById('kana-input').value.trim();
+  if(!t) return;
+  const item = {text:t, cat:S.cat, id:Date.now(), savedAt:Date.now()};
+  S.contents.push(item);
+  await dbPut('contents', item);
+  document.getElementById('kana-input').value='';
+  renderPracticeCard(); toast('追加・保存しました！');
+}
+async function quickAdd(text, cat){
+  const item = {text, cat, id:Date.now()+Math.random(), savedAt:Date.now()};
+  S.contents.push(item);
+  await dbPut('contents', item);
+  renderPracticeCard();
+}
+function renderContentList(){
+  const el=document.getElementById('content-list-view');
+  if(!S.contents.length){el.innerHTML='<div class="empty">まだありません</div>';return;}
+  el.innerHTML=S.contents.map((c,i)=>`
+    <div class="content-item">
+      <span style="font-size:11px;color:var(--muted);min-width:44px;">${c.cat}</span>
+      <span style="font-size:18px;flex:1;">${c.text}</span>
+      <div class="icon-btn" onclick="removeContent(${i})">✕</div>
+    </div>`).join('');
+}
+async function removeContent(i){
+  const item = S.contents.splice(i,1)[0];
+  if(item) await dbDelete('contents', item.id);
+  if(S.idx>=S.contents.length) S.idx=Math.max(0,S.contents.length-1);
+  renderContentList(); renderPracticeCard();
+}
+
+/* ══════════════════════════════════════
+   Audio upload — Blob stored in IndexedDB
+   ══════════════════════════════════════ */
+function handleAudioUpload(input){
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const item = {
+        id: Date.now() + Math.random(),
+        name: file.name,
+        label: file.name.replace(/\.[^.]+$/,''),
+        dataUrl: e.target.result,
+        savedAt: Date.now()
+      };
+      S.audioFiles.push(item);
+      try {
+        await dbPut('audioFiles', item);
+        loaded++;
+        if(loaded === files.length){
+          showSaveIndicator('✓ ' + loaded + ' ファイルをブラウザに保存しました');
+          updateStorageCount();
+        }
+      } catch(err){
+        showSaveIndicator('⚠️ 保存に失敗しました（容量不足の可能性）');
+      }
+      renderAudioFileList();
+      renderAudioPractice();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function renderAudioFileList(){
+  const el=document.getElementById('audio-file-list');
+  if(!S.audioFiles.length){el.innerHTML='';return;}
+  el.innerHTML=S.audioFiles.map((f,i)=>`
+    <div class="audio-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.label}</div>
+          <div style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+        </div>
+        <div class="icon-btn" style="margin-left:8px;" onclick="removeAudioFile(${i})">✕</div>
+      </div>
+      <audio controls src="${f.dataUrl}"></audio>
+    </div>`).join('');
+}
+
+async function removeAudioFile(i){
+  const item = S.audioFiles.splice(i,1)[0];
+  if(item){
+    await dbDelete('audioFiles', item.id);
+    showSaveIndicator('✓ 削除しました');
+    updateStorageCount();
+  }
+  renderAudioFileList();
+  renderAudioPractice();
+}
+
+function renderAudioPractice(){
+  const el=document.getElementById('audio-practice-list');
+  if(!S.audioFiles.length){el.innerHTML='<div class="empty">ครูยังไม่ได้อัปโหลดไฟล์เสียง</div>';return;}
+  el.innerHTML=S.audioFiles.map(f=>`
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;">🎵 ${f.label}</div>
+      <audio controls style="width:100%;" src="${f.dataUrl}"></audio>
+      <div style="margin-top:8px;font-size:13px;color:var(--muted);">ฟังเสียงแล้วลองออกเสียงตาม</div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   Practice card
+   ══════════════════════════════════════ */
+function renderPracticeCard(){
+  const c=S.contents[S.idx];
+  if(!c){
+    document.getElementById('practice-text').textContent='—';
+    document.getElementById('practice-cat').textContent='ยังไม่มีเนื้อหา';
+    document.getElementById('nav-counter').textContent='0 / 0';
+    document.getElementById('progress-dots').innerHTML='';
+    return;
+  }
+  document.getElementById('practice-text').textContent=c.text;
+  document.getElementById('practice-cat').textContent=c.cat;
+  document.getElementById('nav-counter').textContent=`${S.idx+1} / ${S.contents.length}`;
+  document.getElementById('progress-dots').innerHTML=
+    S.contents.map((_,i)=>`<div class="dot ${i===S.idx?'current':i<S.idx?'done':''}"></div>`).join('');
+  resetAll();
+  document.getElementById('eval-result').style.display='none';
+}
+function navItem(d){
+  S.idx=Math.max(0,Math.min(S.contents.length-1,S.idx+d));
+  renderPracticeCard();
+}
+
+/* ══════════════════════════════════════
+   Recording + Speech Recognition
+   ══════════════════════════════════════ */
+async function toggleRecord(){
+  if(S.recording){ stopAll(); return; }
+  hideAllBanners(); setStatus('');
+  if(!S.hasSpeechAPI) document.getElementById('banner-nobrowser').style.display='block';
+  setHint('กำลังขอสิทธิ์ไมโครโฟน...');
+  let stream;
+  try { stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); }
+  catch(err){
+    document.getElementById('banner-mic').style.display='block';
+    setHint('แตะเพื่อเริ่มบันทึกเสียง');
+    setStatus(err.name+': '+err.message);
+    return;
+  }
+  const types=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg','audio/mp4',''];
+  const mime=types.find(m=>m===''||MediaRecorder.isTypeSupported(m))||'';
+  S.chunks=[];
+  try { S.mediaRec=new MediaRecorder(stream, mime?{mimeType:mime}:{}); }
+  catch(err){
+    stream.getTracks().forEach(t=>t.stop());
+    setHint('แตะเพื่อเริ่มบันทึกเสียง');
+    setStatus('เบราว์เซอร์ไม่รองรับการบันทึกเสียง');
+    return;
+  }
+  S.mediaRec.ondataavailable=e=>{if(e.data&&e.data.size>0)S.chunks.push(e.data);};
+  S.mediaRec.onstop=()=>{
+    stream.getTracks().forEach(t=>t.stop());
+    if(!S.chunks.length) return;
+    const blob=new Blob(S.chunks,{type:S.mediaRec.mimeType||'audio/webm'});
+    S.blob=blob;
+    const r=new FileReader();
+    r.onload=e=>{
+      document.getElementById('recorded-audio').src=e.target.result;
+      document.getElementById('playback-wrap').style.display='flex';
+    };
+    r.readAsDataURL(blob);
+  };
+  S.mediaRec.start(100);
+  if(S.hasSpeechAPI){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    const rec=new SR();
+    rec.lang='ja-JP'; rec.interimResults=true; rec.maxAlternatives=3; rec.continuous=false;
+    S.speechRec=rec; S.transcript='';
+    rec.onresult=e=>{
+      let interim='',final='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+        else interim+=e.results[i][0].transcript;
+      }
+      S.transcript=final||S.transcript;
+      setHint('กำลังฟัง... "' + (final||interim) + '"');
+    };
+    rec.onspeechend=()=>{ try{rec.stop();}catch(e){} };
+    rec.onerror=e=>{
+      if(e.error==='no-speech') document.getElementById('banner-nospeech').style.display='block';
+      else if(e.error==='not-allowed') document.getElementById('banner-mic').style.display='block';
+    };
+    rec.onend=()=>{
+      if(S.mediaRec&&S.mediaRec.state==='recording') S.mediaRec.stop();
+      S.recording=false; setBtnIdle(); finalizeTranscript();
+    };
+    rec.start();
+  }
+  S.recording=true;
+  document.getElementById('record-btn').classList.add('recording');
+  document.getElementById('record-btn').textContent='⏹';
+  setHint('กำลังบันทึก... พูดออกเสียงคำที่เห็น แล้วแตะเพื่อหยุด');
+}
+function stopAll(){
+  if(S.speechRec){ try{S.speechRec.stop();}catch(e){} }
+  if(S.mediaRec&&S.mediaRec.state==='recording'){ try{S.mediaRec.stop();}catch(e){} }
+  S.recording=false; setBtnIdle();
+  if(!S.hasSpeechAPI) finalizeTranscript();
+}
+function finalizeTranscript(){
+  const c=S.contents[S.idx]; if(!c) return;
+  const heard=S.transcript.trim();
+  if(!heard&&!S.hasSpeechAPI){ document.getElementById('eval-btn').style.display=''; setHint('บันทึกสำเร็จ ✓ (ไม่มีการรู้จำเสียง)'); return; }
+  if(!heard){ setHint('แตะเพื่อเริ่มบันทึกเสียง'); return; }
+  showTranscriptComparison(c.text, heard);
+  document.getElementById('eval-btn').style.display='';
+  setHint('บันทึกและรู้จำเสียงสำเร็จ ✓'); setStatus('');
+}
+function showTranscriptComparison(target, heard){
+  document.getElementById('transcript-box').style.display='block';
+  document.getElementById('transcript-target').textContent=target;
+  const tChars=[...target], hChars=[...heard];
+  let html='';
+  hChars.forEach((ch,i)=>{
+    if(ch===tChars[i]) html+=`<span class="char-match">${ch}</span>`;
+    else if(tChars.includes(ch)) html+=`<span class="char-extra">${ch}</span>`;
+    else html+=`<span class="char-miss">${ch}</span>`;
+  });
+  if(!html) html='<span style="color:var(--muted);">(ไม่ได้ยิน)</span>';
+  document.getElementById('transcript-heard').innerHTML=html;
+  document.getElementById('transcript-note').textContent=
+    target===heard ? '✓ ระบบรู้จำเสียงได้ถูกต้องทั้งหมด'
+                   : 'สีเขียว = ถูกต้อง  สีแดง = ผิดพลาด  สีส้ม = เกินมา';
+}
+function resetAll(){
+  stopAll(); S.transcript=''; S.blob=null; S.chunks=[];
+  setBtnIdle(); setHint('แตะเพื่อเริ่มบันทึกเสียง'); setStatus(''); hideAllBanners();
+  document.getElementById('transcript-box').style.display='none';
+  document.getElementById('transcript-target').textContent='—';
+  document.getElementById('transcript-heard').textContent='—';
+  document.getElementById('transcript-note').textContent='';
+  const pw=document.getElementById('playback-wrap'); if(pw)pw.style.display='none';
+  const eb=document.getElementById('eval-btn'); if(eb)eb.style.display='none';
+}
+function setBtnIdle(){ const b=document.getElementById('record-btn'); if(b){b.classList.remove('recording');b.textContent='🎤';} }
+function setHint(t){ const e=document.getElementById('record-hint'); if(e)e.textContent=t; }
+function setStatus(t){ const e=document.getElementById('record-status'); if(e)e.textContent=t; }
+function hideAllBanners(){ ['banner-mic','banner-nospeech','banner-nobrowser'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); }
+
+/* ══════════════════════════════════════
+   AI evaluation
+   ══════════════════════════════════════ */
+async function evaluatePronunciation(){
+  const c=S.contents[S.idx]; if(!c||S.evaluating) return;
+  S.evaluating=true;
+  const btn=document.getElementById('eval-btn');
+  btn.innerHTML='<span class="spinner"></span>กำลังประเมิน...'; btn.disabled=true;
+  const target=c.text, heard=S.transcript.trim();
+  const prompt=heard
+    ? `คุณคือผู้เชี่ยวชาญด้านการสอนภาษาญี่ปุ่นให้ผู้เรียนชาวไทย
+ผู้เรียนได้พยายามออกเสียงคำว่า「${target}」（หมวด: ${c.cat}）
+ระบบ Speech Recognition ของเบราว์เซอร์ฟังได้ว่า:「${heard}」
+เกณฑ์การประเมิน:
+- Speech Recognition ระดับ ChatGPT/Google จะถอดเสียงได้ถูกต้องหากออกเสียงชัดเจน
+- ถ้าระบบถอดได้ถูกต้องทุกตัว → การออกเสียงดีมาก (85-100 คะแนน)
+- ถ้าผิดบางส่วน → วิเคราะห์ว่าผิดตรงไหน เพราะอะไร (ปัญหาพยัญชนะ/สระ/ความยาว)
+- ถ้าผิดหมด → การออกเสียงต้องปรับปรุงมาก (0-40 คะแนน)
+ตอบในรูปแบบ JSON เท่านั้น (ไม่ต้องใส่ markdown):
+{"score":<0-100>,"accuracy":<0-100>,"rhythm":<0-100>,"intonation":<0-100>,"feedback_th":"<วิเคราะห์ผลตามที่ระบบได้ยิน บอกว่าถูก/ผิดส่วนไหน และแนะนำการแก้ไข 2-3 ประโยค>","feedback_ja":"<日本語で1文コメント>","points":["<จุดปรับปรุงที่ 1>","<จุดปรับปรุงที่ 2>"]}`
+    : `คุณคือผู้เชี่ยวชาญด้านการสอนภาษาญี่ปุ่นให้ผู้เรียนชาวไทย
+ผู้เรียนพยายามออกเสียง「${target}」（${c.cat}）แต่ระบบ Speech Recognition ไม่สามารถถอดเสียงได้
+แสดงว่าเสียงยังไม่ชัดเจนพอที่ระบบจะรับรู้ได้ ให้คำแนะนำทั่วไปสำหรับคำนี้
+JSON เท่านั้น:
+{"score":30,"accuracy":30,"rhythm":40,"intonation":40,"feedback_th":"<คำแนะนำ 2-3 ประโยค>","feedback_ja":"<日本語1文>","points":["<จุดปรับปรุง 1>","<จุดปรับปรุง 2>"]}`;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    const data=await res.json();
+    const txt=data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    renderEval(JSON.parse(txt), heard);
+  }catch(e){
+    renderEval({score:50,accuracy:50,rhythm:50,intonation:50,
+      feedback_th:"ไม่สามารถเชื่อมต่อกับระบบประเมินได้ กรุณาลองใหม่อีกครั้ง",
+      feedback_ja:"評価システムに接続できませんでした。",points:["ลองบันทึกเสียงและประเมินใหม่"]}, heard);
+  }
+  S.evaluating=false; btn.innerHTML='ให้ AI ประเมินการออกเสียง ↗'; btn.disabled=false;
+}
+function renderEval(r, heard){
+  const sc=r.score, scc=sc>=80?'score-high':sc>=60?'score-mid':'score-low';
+  const slbl=sc>=80?'ยอดเยี่ยม! 🎉':sc>=60?'ดี แต่ยังพัฒนาได้':'ต้องฝึกเพิ่มอีกนะ';
+  const bc=v=>v>=80?'fill-good':v>=60?'fill-mid':'fill-bad';
+  const bar=(l,v)=>`<div class="bar-wrap"><div class="bar-labels"><span>${l}</span><span>${v}%</span></div><div class="bar-track"><div class="bar-fill ${bc(v)}" style="width:${v}%"></div></div></div>`;
+  const pts=(r.points||[]).map(p=>`<li style="margin-bottom:4px;">${p}</li>`).join('');
+  const heardNote=heard?`<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding:6px 10px;background:var(--bg);border-radius:var(--r-md);border:0.5px solid var(--border);">ระบบได้ยินว่า: <strong>「${heard}」</strong></div>`:'';
+  document.getElementById('eval-result').style.display='';
+  document.getElementById('eval-result').innerHTML=`
+    <div class="eval-card">
+      <div class="eval-header">
+        <div class="eval-score ${scc}">${sc}<span style="font-size:16px;">คะแนน</span></div>
+        <div><div style="font-size:14px;font-weight:600;">ผลการประเมินการออกเสียง</div>
+        <div style="font-size:12px;color:var(--muted);">${slbl}</div></div>
+      </div>
+      ${heardNote}
+      ${bar('ความถูกต้องของเสียง',r.accuracy)}${bar('จังหวะและลีลา',r.rhythm)}${bar('ทำนองเสียง',r.intonation)}
+      <div class="eval-fb">
+        <div class="fb-lbl">🇹🇭 คำแนะนำ (ภาษาไทย)</div><div class="fb-txt">${r.feedback_th}</div>
+        <div class="fb-lbl">🇯🇵 コメント (日本語)</div><div class="fb-txt">${r.feedback_ja}</div>
+        ${pts?`<div class="fb-lbl">จุดที่ควรปรับปรุง</div><ul style="padding-left:1.2rem;font-size:13px;color:var(--ink);">${pts}</ul>`:''}
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════
+   Toast
+   ══════════════════════════════════════ */
+function toast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3d5a99;color:#fff;padding:8px 20px;border-radius:8px;font-size:13px;z-index:9999;white-space:nowrap;';
+  t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500);
+}
+
+/* ══════════════════════════════════════
+   Drag-drop upload
+   ══════════════════════════════════════ */
+const dz=document.getElementById('drop-zone');
+if(dz){
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='#3d5a99';});
+  dz.addEventListener('dragleave',()=>{dz.style.borderColor='';});
+  dz.addEventListener('drop',e=>{
+    e.preventDefault(); dz.style.borderColor='';
+    const fakeInput={files:Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('audio/'))};
+    if(fakeInput.files.length) handleAudioUpload(fakeInput);
+  });
+}
+
+/* ══════════════════════════════════════
+   Init — open DB then render
+   ══════════════════════════════════════ */
+(async ()=>{
+  try {
+    S.db = await openDB();
+    await loadAllFromDB();
+  } catch(e) {
+    console.warn('IndexedDB not available:', e);
+  }
+  // Hide loading, show app
+  document.getElementById('loading-overlay').style.display='none';
+  document.getElementById('main-wrap').style.display='';
+  // Only add default content if DB was completely empty
+  if(S.contents.length===0){
+    await quickAdd('さくら','ひらがな');
+    await quickAdd('コーヒー','カタカナ');
+    await quickAdd('ありがとうございます','文');
+  }
+  renderPracticeCard();
+  renderAudioFileList();
+  renderAudioPractice();
+  updateStorageCount();
+})();
+</script>
+</body>
+</html>
